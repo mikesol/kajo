@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kajo — Faint Light in Darkness</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <style>
+    :root {
+      /* Nordic Night Sky */
+      --deep-night: #050a12;
+      --night-blue: #0a1628;
+      --midnight: #0f1d32;
+      --twilight: #1a2d4a;
+
+      /* Aurora Colors */
+      --aurora-teal: #00d4aa;
+      --aurora-cyan: #22d3ee;
+      --aurora-purple: #8b5cf6;
+      --aurora-pink: #ec4899;
+      --aurora-blue: #3b82f6;
+
+      /* Ice & Snow */
+      --ice-white: #f8fafc;
+      --frost: #e2e8f0;
+      --silver: #94a3b8;
+      --steel: #64748b;
+
+      /* Forest */
+      --pine-dark: #0d1117;
+      --pine-mid: #1a2332;
+      --pine-light: #2d3748;
+
+      /* Typography */
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    html.lenis {
+      height: auto;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--deep-night);
+      color: var(--ice-white);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Smooth Scroll Container */
+    .scroll-container {
+      position: relative;
+    }
+
+    /* ========== NAVIGATION ========== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      mix-blend-mode: difference;
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ice-white);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ice-white);
+      text-decoration: none;
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      opacity: 1;
+    }
+
+    /* Section Indicator */
+    .section-indicator {
+      position: fixed;
+      right: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ice-white);
+      opacity: 0.3;
+      transition: all 0.4s ease;
+      cursor: pointer;
+    }
+
+    .indicator-dot.active {
+      opacity: 1;
+      transform: scale(1.5);
+      background: var(--aurora-teal);
+      box-shadow: 0 0 20px var(--aurora-teal);
+    }
+
+    /* ========== FIXED AURORA BACKGROUND ========== */
+    .aurora-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #aurora-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Mountain Silhouettes - Fixed */
+    .mountains-svg {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 45%;
+      z-index: 1;
+      pointer-events: none;
+      transform: translateY(var(--mountain-offset, 0));
+      transition: transform 0.1s ease-out;
+    }
+
+    /* Water Reflection - Fixed */
+    .water-reflection {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 15%;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 15, 25, 0.4) 0%,
+        rgba(0, 20, 30, 0.7) 50%,
+        rgba(0, 15, 25, 0.9) 100%
+      );
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .water-reflection::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0, 180, 140, 0.03) 30%,
+        rgba(0, 200, 160, 0.06) 50%,
+        rgba(0, 180, 140, 0.03) 70%,
+        transparent 100%
+      );
+      animation: shimmer 10s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+
+    /* ========== HERO SECTION ========== */
+    .hero {
+      position: relative;
+      height: 100vh;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Hero Content */
+    .hero-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(4rem, 15vw, 12rem);
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      margin-left: 0.3em; /* Compensate for letter-spacing */
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      background: linear-gradient(
+        180deg,
+        var(--ice-white) 0%,
+        var(--aurora-teal) 50%,
+        var(--aurora-cyan) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 1.5s ease-out 0.5s forwards;
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-display);
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: 0.2em;
+      color: var(--silver);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1.2s ease-out 1s forwards;
+    }
+
+    .hero-tagline {
+      margin-top: 3rem;
+      font-size: 0.875rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--frost);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1.2s ease-out 1.4s forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 2s forwards;
+    }
+
+    .scroll-indicator span {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--silver);
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(to bottom, var(--aurora-teal), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { transform: scaleY(1); opacity: 1; }
+      50% { transform: scaleY(0.5); opacity: 0.5; }
+    }
+
+    /* ========== CONTENT SECTIONS ========== */
+    .section {
+      position: relative;
+      min-height: 100vh;
+      padding: 8rem 3rem;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .section-light {
+      background: rgba(248, 250, 252, 0.92);
+      backdrop-filter: blur(40px);
+      color: var(--night-blue);
+    }
+
+    .section-dark {
+      background: rgba(5, 10, 18, 0.97);
+      backdrop-filter: blur(10px);
+    }
+
+    .section-twilight {
+      background: rgba(15, 29, 50, 0.95);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Glass effect for sections over aurora */
+    .section-glass {
+      background: rgba(5, 10, 18, 0.85);
+      backdrop-filter: blur(20px);
+    }
+
+    .section-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Section Headers */
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--aurora-teal);
+      margin-bottom: 1rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s ease-out;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 2rem;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease-out 0.1s;
+    }
+
+    .section-light .section-title {
+      color: var(--night-blue);
+    }
+
+    .section-description {
+      font-size: 1.125rem;
+      line-height: 1.8;
+      max-width: 600px;
+      color: var(--steel);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s ease-out 0.2s;
+    }
+
+    .section-light .section-description {
+      color: var(--twilight);
+    }
+
+    .section.in-view .section-label,
+    .section.in-view .section-title,
+    .section.in-view .section-description {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ========== WHO WE ARE ========== */
+    #about {
+      display: flex;
+      align-items: center;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .about-visual {
+      position: relative;
+      height: 500px;
+      opacity: 0;
+      transform: translateX(-30px);
+      transition: all 1s ease-out 0.3s;
+    }
+
+    .section.in-view .about-visual {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .crystal {
+      position: absolute;
+      background: linear-gradient(
+        135deg,
+        rgba(0, 212, 170, 0.1) 0%,
+        rgba(139, 92, 246, 0.1) 50%,
+        rgba(34, 211, 238, 0.1) 100%
+      );
+      border: 1px solid rgba(0, 212, 170, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .crystal-1 {
+      width: 200px;
+      height: 300px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(15deg);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .crystal-2 {
+      width: 150px;
+      height: 200px;
+      top: 20%;
+      left: 20%;
+      transform: rotate(-10deg);
+      clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+      animation: float 10s ease-in-out infinite reverse;
+    }
+
+    .crystal-3 {
+      width: 100px;
+      height: 150px;
+      bottom: 15%;
+      right: 25%;
+      transform: rotate(25deg);
+      clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(-50%, -50%) rotate(15deg) translateY(0); }
+      50% { transform: translate(-50%, -50%) rotate(15deg) translateY(-20px); }
+    }
+
+    .philosophy-list {
+      margin-top: 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .philosophy-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s ease-out;
+    }
+
+    .section.in-view .philosophy-item:nth-child(1) { transition-delay: 0.4s; }
+    .section.in-view .philosophy-item:nth-child(2) { transition-delay: 0.5s; }
+    .section.in-view .philosophy-item:nth-child(3) { transition-delay: 0.6s; }
+
+    .section.in-view .philosophy-item {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .philosophy-icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      margin-top: 0.25rem;
+    }
+
+    .philosophy-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: var(--aurora-teal);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .philosophy-text h4 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: var(--night-blue);
+    }
+
+    .philosophy-text p {
+      font-size: 0.9rem;
+      color: var(--steel);
+    }
+
+    /* ========== CARDS GRID (Sellers, Investors, Operators) ========== */
+    .cards-section {
+      padding-top: 10rem;
+      padding-bottom: 10rem;
+    }
+
+    .cards-header {
+      margin-bottom: 5rem;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 2.5rem;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s ease-out;
+    }
+
+    .section.in-view .card:nth-child(1) { transition-delay: 0.2s; }
+    .section.in-view .card:nth-child(2) { transition-delay: 0.35s; }
+    .section.in-view .card:nth-child(3) { transition-delay: 0.5s; }
+
+    .section.in-view .card {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--aurora-teal), var(--aurora-purple), var(--aurora-cyan));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.5s ease-out;
+    }
+
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(0, 212, 170, 0.2);
+      transform: translateY(-5px);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 1.5rem;
+      color: var(--aurora-teal);
+    }
+
+    .card-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1;
+    }
+
+    .card h3 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: var(--silver);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--aurora-teal);
+      text-decoration: none;
+      transition: gap 0.3s ease;
+    }
+
+    .card-link:hover {
+      gap: 0.75rem;
+    }
+
+    .card-link svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* Section-specific styling */
+    .section-sellers .card {
+      background: rgba(10, 22, 40, 0.5);
+      border-color: rgba(10, 22, 40, 0.3);
+    }
+
+    .section-sellers .card:hover {
+      background: rgba(10, 22, 40, 0.7);
+    }
+
+    /* ========== LARGE CTA SECTIONS ========== */
+    .cta-section {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+    }
+
+    .cta-content {
+      max-width: 800px;
+      padding: 4rem;
+    }
+
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 300;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease-out;
+    }
+
+    .cta-text {
+      font-size: 1.125rem;
+      color: var(--silver);
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s ease-out 0.1s;
+    }
+
+    .section.in-view .cta-title,
+    .section.in-view .cta-text {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 2.5rem;
+      background: transparent;
+      border: 1px solid var(--aurora-teal);
+      color: var(--aurora-teal);
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .section.in-view .cta-button {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.2s;
+    }
+
+    .cta-button:hover {
+      background: var(--aurora-teal);
+      color: var(--night-blue);
+      box-shadow: 0 0 30px rgba(0, 212, 170, 0.3);
+    }
+
+    .cta-button svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      transition: transform 0.3s ease;
+    }
+
+    .cta-button:hover svg {
+      transform: translateX(4px);
+    }
+
+    /* ========== FOOTER ========== */
+    footer {
+      padding: 4rem 3rem;
+      background: var(--deep-night);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ice-white);
+    }
+
+    .footer-text {
+      font-size: 0.8rem;
+      color: var(--steel);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .footer-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--silver);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--aurora-teal);
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 1024px) {
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+
+      .about-visual {
+        height: 300px;
+        order: -1;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav {
+        padding: 1rem 1.5rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .section {
+        padding: 5rem 1.5rem;
+      }
+
+      .section-indicator {
+        display: none;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        gap: 2rem;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="#" class="nav-logo">Kajo</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#sellers">Sellers</a></li>
+      <li><a href="#investors">Investors</a></li>
+      <li><a href="#operators">Operators</a></li>
+    </ul>
+  </nav>
+
+  <!-- Section Indicator -->
+  <div class="section-indicator">
+    <div class="indicator-dot active" data-section="hero"></div>
+    <div class="indicator-dot" data-section="about"></div>
+    <div class="indicator-dot" data-section="sellers"></div>
+    <div class="indicator-dot" data-section="investors"></div>
+    <div class="indicator-dot" data-section="operators"></div>
+  </div>
+
+  <!-- FIXED AURORA BACKGROUND -->
+  <div class="aurora-bg">
+    <canvas id="aurora-canvas"></canvas>
+
+    <!-- Mountain Silhouettes -->
+    <svg class="mountains-svg" viewBox="0 0 1920 500" preserveAspectRatio="xMidYMax slice">
+      <!-- Far distant mountains -->
+      <path class="mountain-layer mountain-far" fill="#0c1824" opacity="0.4" d="M0,500 L0,380 L120,340 L280,380 L400,300 L580,350 L720,260 L900,320 L1050,240 L1200,300 L1350,220 L1500,280 L1650,240 L1800,300 L1920,260 L1920,500 Z"/>
+      <!-- Distant mountains -->
+      <path class="mountain-layer mountain-mid" fill="#081018" opacity="0.7" d="M0,500 L0,400 L100,360 L220,400 L380,320 L500,370 L680,280 L850,340 L1000,260 L1180,320 L1320,250 L1480,310 L1640,270 L1800,330 L1920,290 L1920,500 Z"/>
+      <!-- Near mountains -->
+      <path class="mountain-layer mountain-near" fill="#040810" d="M0,500 L0,420 L80,390 L200,420 L340,350 L480,400 L620,320 L800,380 L950,300 L1120,360 L1280,290 L1440,350 L1600,300 L1760,360 L1920,320 L1920,500 Z"/>
+    </svg>
+
+    <!-- Water/Lake Reflection -->
+    <div class="water-reflection"></div>
+  </div>
+
+  <div class="scroll-container">
+    <!-- HERO SECTION -->
+    <section class="hero" id="hero">
+      <!-- Hero Content -->
+      <div class="hero-content">
+        <h1 class="hero-title">Kajo</h1>
+        <p class="hero-subtitle">Faint light in darkness</p>
+        <p class="hero-tagline">A Nordic Investment Firm</p>
+      </div>
+
+      <!-- Scroll Indicator -->
+      <div class="scroll-indicator">
+        <span>Scroll</span>
+        <div class="scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- ABOUT SECTION -->
+    <section class="section section-light" id="about">
+      <div class="section-container">
+        <div class="about-grid">
+          <div class="about-visual">
+            <div class="crystal crystal-1"></div>
+            <div class="crystal crystal-2"></div>
+            <div class="crystal crystal-3"></div>
+          </div>
+          <div class="about-content">
+            <span class="section-label">Who We Are</span>
+            <h2 class="section-title">Building legacies<br>in northern light</h2>
+            <p class="section-description">
+              Kajo is a Nordic investment firm that finds exceptional companies and nurtures them toward their full potential. Like the faint aurora that heralds the dawn, we see promise where others see only darkness.
+            </p>
+
+            <div class="philosophy-list">
+              <div class="philosophy-item">
+                <div class="philosophy-icon">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div class="philosophy-text">
+                  <h4>Patient Capital</h4>
+                  <p>We think in decades, not quarters. True value takes time to crystallize.</p>
+                </div>
+              </div>
+              <div class="philosophy-item">
+                <div class="philosophy-icon">
+                  <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="philosophy-text">
+                  <h4>Operational Excellence</h4>
+                  <p>We don't just invest—we partner, build, and transform alongside founders.</p>
+                </div>
+              </div>
+              <div class="philosophy-item">
+                <div class="philosophy-icon">
+                  <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </div>
+                <div class="philosophy-text">
+                  <h4>Nordic Values</h4>
+                  <p>Trust, transparency, and sisu—the quiet determination to see things through.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SELLERS SECTION -->
+    <section class="section section-dark cards-section section-sellers" id="sellers">
+      <div class="section-container">
+        <div class="cards-header">
+          <span class="section-label">For Sellers</span>
+          <h2 class="section-title">Your life's work<br>deserves the right steward</h2>
+          <p class="section-description">
+            You've built something remarkable. When the time comes to transition, we offer more than capital—we offer continuity, respect for your legacy, and a commitment to your team.
+          </p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 48 48"><path d="M24 4L4 14v20l20 10 20-10V14L24 4z"/><path d="M4 14l20 10m0 0l20-10m-20 10v20"/></svg>
+            </div>
+            <h3>Thoughtful Transitions</h3>
+            <p>We structure deals that respect your timeline, protect your employees, and honor the culture you've built.</p>
+            <a href="#" class="card-link">
+              Learn more
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20"/><path d="M24 14v10l7 7"/></svg>
+            </div>
+            <h3>Long-term Partnership</h3>
+            <p>Stay involved as much or as little as you wish. Many founders remain as advisors, board members, or in operational roles.</p>
+            <a href="#" class="card-link">
+              Our approach
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 48 48"><path d="M14 24h20M24 14v20"/><circle cx="24" cy="24" r="20"/></svg>
+            </div>
+            <h3>Fair Valuations</h3>
+            <p>No aggressive tactics. No hidden agendas. Just honest conversations about what your company is worth and what you need.</p>
+            <a href="#" class="card-link">
+              Start a conversation
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVESTORS SECTION -->
+    <section class="section section-twilight cta-section" id="investors">
+      <div class="cta-content">
+        <span class="section-label">For Investors</span>
+        <h2 class="cta-title">Join us in building<br>the next generation of Nordic excellence</h2>
+        <p class="cta-text">
+          We partner with institutional investors, family offices, and aligned individuals who share our long-term vision. Our fund structure rewards patience and conviction.
+        </p>
+        <a href="#" class="cta-button">
+          Investment opportunities
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <!-- Subtle aurora glow -->
+      <div style="position: absolute; inset: 0; pointer-events: none; opacity: 0.3;">
+        <div style="position: absolute; width: 600px; height: 600px; top: 20%; left: 10%; background: radial-gradient(circle, rgba(0,212,170,0.2) 0%, transparent 70%); filter: blur(60px);"></div>
+        <div style="position: absolute; width: 400px; height: 400px; bottom: 10%; right: 20%; background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%); filter: blur(50px);"></div>
+      </div>
+    </section>
+
+    <!-- OPERATORS SECTION -->
+    <section class="section section-dark cards-section" id="operators" style="background: var(--deep-night);">
+      <div class="section-container">
+        <div class="cards-header">
+          <span class="section-label">For Operators</span>
+          <h2 class="section-title">Shape the future<br>of remarkable companies</h2>
+          <p class="section-description">
+            We're always looking for exceptional talent—leaders, specialists, and builders who want to make a meaningful impact within our portfolio companies.
+          </p>
+        </div>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 48 48"><path d="M24 4v40M4 24h40"/><circle cx="24" cy="24" r="8"/></svg>
+            </div>
+            <h3>Leadership Roles</h3>
+            <p>CEO, CFO, and executive positions at companies ready for their next chapter. Real ownership, real impact.</p>
+            <a href="#" class="card-link">
+              View opportunities
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 48 48"><path d="M14 34V24a10 10 0 0 1 20 0v10"/><rect x="10" y="34" width="28" height="10" rx="2"/></svg>
+            </div>
+            <h3>Operating Partners</h3>
+            <p>Work across our portfolio, bringing expertise in operations, technology, sales, or finance to multiple companies.</p>
+            <a href="#" class="card-link">
+              Partner with us
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">
+              <svg viewBox="0 0 48 48"><path d="M24 14l-10 18h20L24 14z"/><path d="M24 24v8"/><circle cx="24" cy="36" r="2"/></svg>
+            </div>
+            <h3>Advisory Network</h3>
+            <p>Join our network of advisors and consultants. Flexible engagement, meaningful work, Nordic values.</p>
+            <a href="#" class="card-link">
+              Join the network
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-logo">Kajo</div>
+        <p class="footer-text">© 2026 Kajo Partners. Helsinki, Finland.</p>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ========== THREE.JS AURORA BOREALIS ==========
+    function initAurora() {
+      const canvas = document.getElementById('aurora-canvas');
+      if (!canvas) return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: false
+      });
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Aurora Shader
+      const vertexShader = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position, 1.0);
+        }
+      `;
+
+      const fragmentShader = `
+        uniform float uTime;
+        uniform vec2 uResolution;
+        varying vec2 vUv;
+
+        // Simplex noise functions
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+        float snoise(vec2 v) {
+          const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                             -0.577350269189626, 0.024390243902439);
+          vec2 i  = floor(v + dot(v, C.yy));
+          vec2 x0 = v -   i + dot(i, C.xx);
+          vec2 i1;
+          i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+          vec4 x12 = x0.xyxy + C.xxzz;
+          x12.xy -= i1;
+          i = mod289(i);
+          vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
+            + i.x + vec3(0.0, i1.x, 1.0));
+          vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
+            dot(x12.zw,x12.zw)), 0.0);
+          m = m*m;
+          m = m*m;
+          vec3 x = 2.0 * fract(p * C.www) - 1.0;
+          vec3 h = abs(x) - 0.5;
+          vec3 ox = floor(x + 0.5);
+          vec3 a0 = x - ox;
+          m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+          vec3 g;
+          g.x  = a0.x  * x0.x  + h.x  * x0.y;
+          g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+          return 130.0 * dot(m, g);
+        }
+
+        // Fractal Brownian Motion
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amplitude = 0.5;
+          float frequency = 1.0;
+          for (int i = 0; i < 6; i++) {
+            value += amplitude * snoise(p * frequency);
+            frequency *= 2.0;
+            amplitude *= 0.5;
+          }
+          return value;
+        }
+
+        // Aurora ribbon function
+        float auroraRibbon(vec2 uv, float time, float offset, float speed, float width) {
+          float y = uv.y + offset;
+          float wave1 = snoise(vec2(uv.x * 2.0 + time * speed, time * 0.1)) * 0.15;
+          float wave2 = snoise(vec2(uv.x * 4.0 - time * speed * 0.7, time * 0.15 + 10.0)) * 0.08;
+          float wave3 = snoise(vec2(uv.x * 8.0 + time * speed * 0.3, time * 0.2 + 20.0)) * 0.04;
+          float displacement = wave1 + wave2 + wave3;
+
+          float ribbon = smoothstep(width, 0.0, abs(y - 0.5 - displacement));
+          ribbon *= smoothstep(0.0, 0.3, uv.y) * smoothstep(1.0, 0.6, uv.y);
+
+          // Add intensity variation
+          float intensity = snoise(vec2(uv.x * 3.0 + time * 0.5, time * 0.1)) * 0.5 + 0.5;
+          ribbon *= 0.5 + intensity * 0.5;
+
+          return ribbon;
+        }
+
+        void main() {
+          vec2 uv = vUv;
+          float aspectRatio = uResolution.x / uResolution.y;
+          vec2 scaledUv = vec2(uv.x * aspectRatio, uv.y);
+
+          float time = uTime * 0.15;
+
+          // Deep night sky gradient
+          vec3 skyTop = vec3(0.01, 0.02, 0.05);
+          vec3 skyMid = vec3(0.02, 0.04, 0.08);
+          vec3 skyBottom = vec3(0.01, 0.03, 0.06);
+          vec3 sky = mix(skyBottom, skyMid, smoothstep(0.0, 0.5, uv.y));
+          sky = mix(sky, skyTop, smoothstep(0.5, 1.0, uv.y));
+
+          // Stars
+          float stars = 0.0;
+          for (float i = 0.0; i < 3.0; i++) {
+            vec2 starUv = scaledUv * (50.0 + i * 30.0);
+            float star = snoise(starUv + i * 100.0);
+            star = pow(max(0.0, star), 20.0) * (0.3 + 0.7 * sin(time * 2.0 + i));
+            stars += star * (0.5 + i * 0.2);
+          }
+          sky += vec3(stars * 0.8, stars * 0.9, stars);
+
+          // Aurora colors
+          vec3 auroraGreen1 = vec3(0.1, 0.9, 0.5);
+          vec3 auroraGreen2 = vec3(0.2, 0.8, 0.4);
+          vec3 auroraTeal = vec3(0.1, 0.7, 0.6);
+          vec3 auroraPurple = vec3(0.4, 0.2, 0.6);
+          vec3 auroraBlue = vec3(0.2, 0.4, 0.8);
+
+          // Multiple aurora ribbons with different properties
+          float ribbon1 = auroraRibbon(uv, time, 0.15, 0.3, 0.12);
+          float ribbon2 = auroraRibbon(uv, time * 1.1, 0.05, 0.25, 0.10);
+          float ribbon3 = auroraRibbon(uv, time * 0.9, 0.25, 0.35, 0.08);
+          float ribbon4 = auroraRibbon(uv, time * 1.2, -0.05, 0.2, 0.15);
+          float ribbon5 = auroraRibbon(uv, time * 0.8, 0.35, 0.28, 0.06);
+
+          // Color mixing based on position and noise
+          float colorMix = fbm(scaledUv * 0.5 + time * 0.1) * 0.5 + 0.5;
+          float colorMix2 = fbm(scaledUv * 0.3 - time * 0.05 + 50.0) * 0.5 + 0.5;
+
+          vec3 aurora1Color = mix(auroraGreen1, auroraGreen2, colorMix);
+          vec3 aurora2Color = mix(auroraTeal, auroraGreen1, colorMix2);
+          vec3 aurora3Color = mix(auroraGreen2, auroraTeal, colorMix);
+          vec3 aurora4Color = mix(auroraGreen1, auroraPurple, colorMix2 * 0.3);
+          vec3 aurora5Color = mix(auroraTeal, auroraBlue, colorMix * 0.4);
+
+          // Combine aurora layers
+          vec3 aurora = vec3(0.0);
+          aurora += aurora1Color * ribbon1 * 0.7;
+          aurora += aurora2Color * ribbon2 * 0.6;
+          aurora += aurora3Color * ribbon3 * 0.5;
+          aurora += aurora4Color * ribbon4 * 0.8;
+          aurora += aurora5Color * ribbon5 * 0.4;
+
+          // Add glow effect
+          float glow = (ribbon1 + ribbon2 + ribbon3 + ribbon4 + ribbon5) * 0.15;
+          vec3 glowColor = mix(auroraGreen1, auroraTeal, 0.5) * glow;
+          aurora += glowColor;
+
+          // Add subtle vertical rays
+          float rays = 0.0;
+          for (float i = 0.0; i < 5.0; i++) {
+            float rayX = snoise(vec2(i * 10.0, time * 0.2)) * 0.5 + 0.5;
+            float ray = smoothstep(0.02, 0.0, abs(uv.x - rayX));
+            ray *= smoothstep(0.3, 0.7, uv.y) * smoothstep(1.0, 0.5, uv.y);
+            ray *= snoise(vec2(uv.y * 20.0 + time + i, i)) * 0.5 + 0.5;
+            rays += ray * 0.1;
+          }
+          aurora += auroraGreen1 * rays;
+
+          // Final composition
+          vec3 color = sky + aurora;
+
+          // Add subtle vignette
+          float vignette = 1.0 - smoothstep(0.5, 1.5, length(uv - 0.5) * 1.5);
+          color *= 0.7 + vignette * 0.3;
+
+          // Tone mapping
+          color = color / (color + vec3(1.0));
+          color = pow(color, vec3(0.95));
+
+          gl_FragColor = vec4(color, 1.0);
+        }
+      `;
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const material = new THREE.ShaderMaterial({
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        uniforms: {
+          uTime: { value: 0 },
+          uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        }
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      // Animation loop
+      function animate() {
+        material.uniforms.uTime.value += 0.016;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      });
+
+      animate();
+    }
+
+    // ========== SMOOTH SCROLL (Lenis-style) ==========
+    class SmoothScroll {
+      constructor() {
+        this.currentY = 0;
+        this.targetY = 0;
+        this.ease = 0.075;
+        this.rafId = null;
+        this.init();
+      }
+
+      init() {
+        document.documentElement.classList.add('lenis');
+        this.update();
+      }
+
+      update() {
+        this.targetY = window.scrollY;
+        this.currentY += (this.targetY - this.currentY) * this.ease;
+
+        // Update CSS custom property for parallax
+        const hero = document.querySelector('.hero');
+        if (hero) {
+          const heroHeight = hero.offsetHeight;
+          const progress = Math.min(this.currentY / (heroHeight * 0.5), 1);
+          document.documentElement.style.setProperty('--scroll-progress', progress);
+        }
+
+        this.rafId = requestAnimationFrame(() => this.update());
+      }
+    }
+
+    // ========== SNOW PARTICLES ==========
+    function createSnow() {
+      const container = document.getElementById('snow');
+      const particleCount = 50;
+
+      for (let i = 0; i < particleCount; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.className = 'snowflake';
+        snowflake.style.left = Math.random() * 100 + '%';
+        snowflake.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        snowflake.style.animationDelay = Math.random() * 10 + 's';
+        snowflake.style.width = (Math.random() * 3 + 2) + 'px';
+        snowflake.style.height = snowflake.style.width;
+        snowflake.style.opacity = Math.random() * 0.5 + 0.3;
+        container.appendChild(snowflake);
+      }
+    }
+
+    // ========== INTERSECTION OBSERVER FOR ANIMATIONS ==========
+    function setupScrollAnimations() {
+      const sections = document.querySelectorAll('.section');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+
+            // Update section indicator
+            const sectionId = entry.target.id;
+            document.querySelectorAll('.indicator-dot').forEach(dot => {
+              dot.classList.toggle('active', dot.dataset.section === sectionId);
+            });
+
+            // Update nav links
+            document.querySelectorAll('.nav-links a').forEach(link => {
+              link.classList.toggle('active', link.getAttribute('href') === '#' + sectionId);
+            });
+          }
+        });
+      }, {
+        threshold: 0.3,
+        rootMargin: '-10% 0px -10% 0px'
+      });
+
+      sections.forEach(section => observer.observe(section));
+
+      // Also observe hero
+      const hero = document.querySelector('.hero');
+      const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            document.querySelectorAll('.indicator-dot').forEach(dot => {
+              dot.classList.toggle('active', dot.dataset.section === 'hero');
+            });
+          }
+        });
+      }, { threshold: 0.5 });
+      heroObserver.observe(hero);
+    }
+
+    // ========== SECTION INDICATOR CLICKS ==========
+    function setupIndicatorClicks() {
+      document.querySelectorAll('.indicator-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const sectionId = dot.dataset.section;
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+    }
+
+    // ========== GSAP SCROLL EFFECTS ==========
+    function setupGSAPEffects() {
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Mountain parallax layers
+      const mountainFar = document.querySelector('.mountain-far');
+      const mountainMid = document.querySelector('.mountain-mid');
+      const mountainNear = document.querySelector('.mountain-near');
+
+      if (mountainFar && mountainMid && mountainNear) {
+        // Subtle parallax on mountains as you scroll
+        gsap.to('.mountain-far', {
+          y: -30,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.scroll-container',
+            start: 'top top',
+            end: '+=2000',
+            scrub: 1
+          }
+        });
+
+        gsap.to('.mountain-mid', {
+          y: -60,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.scroll-container',
+            start: 'top top',
+            end: '+=2000',
+            scrub: 1
+          }
+        });
+
+        gsap.to('.mountain-near', {
+          y: -100,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.scroll-container',
+            start: 'top top',
+            end: '+=2000',
+            scrub: 1
+          }
+        });
+      }
+
+      // Fade aurora background as you scroll into content
+      gsap.to('.aurora-bg', {
+        opacity: 0.3,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '#about',
+          start: 'top 80%',
+          end: 'top 20%',
+          scrub: true
+        }
+      });
+
+      // Hero content fade out
+      gsap.to('.hero-content', {
+        opacity: 0,
+        y: -50,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top top',
+          end: 'bottom 60%',
+          scrub: true
+        }
+      });
+
+      // Scroll indicator fade
+      gsap.to('.scroll-indicator', {
+        opacity: 0,
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top top',
+          end: '+=200',
+          scrub: true
+        }
+      });
+    }
+
+    // Pass scroll position to aurora shader
+    let auroraScrollValue = 0;
+    function updateAuroraScroll() {
+      const scrollY = window.scrollY;
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      auroraScrollValue = scrollY / maxScroll;
+    }
+
+    // ========== INITIALIZE ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      initAurora();
+      setupGSAPEffects();
+      setupScrollAnimations();
+      setupIndicatorClicks();
+
+      // Update aurora on scroll
+      window.addEventListener('scroll', updateAuroraScroll, { passive: true });
+    });
+  </script>
+</body>
+</html>
