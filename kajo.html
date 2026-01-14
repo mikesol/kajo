@@ -1105,8 +1105,6 @@
     function setupGSAPEffects() {
       gsap.registerPlugin(ScrollTrigger);
 
-      // Mountains stay fixed - no parallax
-
       // Hero content fade out
       gsap.to('.hero-content', {
         opacity: 0,
@@ -1129,6 +1127,41 @@
           end: '+=200',
           scrub: true
         }
+      });
+
+      // Panels fly in/out from their sides
+      document.querySelectorAll('.panel').forEach(panel => {
+        const isLeft = panel.classList.contains('panel-left');
+        const xStart = isLeft ? '-40%' : '40%';
+
+        // Set initial state
+        gsap.set(panel, { x: xStart, opacity: 0.5 });
+
+        // Fly in
+        gsap.to(panel, {
+          x: '0%',
+          opacity: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: panel.closest('.section'),
+            start: 'top 90%',
+            end: 'top 40%',
+            scrub: 1
+          }
+        });
+
+        // Fly out
+        gsap.to(panel, {
+          x: xStart,
+          opacity: 0.5,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: panel.closest('.section'),
+            start: 'bottom 60%',
+            end: 'bottom 10%',
+            scrub: 1
+          }
+        });
       });
     }
 
