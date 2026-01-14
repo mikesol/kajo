@@ -172,8 +172,6 @@
       height: 45%;
       z-index: 1;
       pointer-events: none;
-      transform: translateY(var(--mountain-offset, 0));
-      transition: transform 0.1s ease-out;
     }
 
     /* Water Reflection - Fixed */
@@ -1156,48 +1154,7 @@
     function setupGSAPEffects() {
       gsap.registerPlugin(ScrollTrigger);
 
-      // Mountain parallax layers
-      const mountainFar = document.querySelector('.mountain-far');
-      const mountainMid = document.querySelector('.mountain-mid');
-      const mountainNear = document.querySelector('.mountain-near');
-
-      if (mountainFar && mountainMid && mountainNear) {
-        // Subtle parallax on mountains as you scroll
-        gsap.to('.mountain-far', {
-          y: -30,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.scroll-container',
-            start: 'top top',
-            end: '+=2000',
-            scrub: 1
-          }
-        });
-
-        gsap.to('.mountain-mid', {
-          y: -60,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.scroll-container',
-            start: 'top top',
-            end: '+=2000',
-            scrub: 1
-          }
-        });
-
-        gsap.to('.mountain-near', {
-          y: -100,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.scroll-container',
-            start: 'top top',
-            end: '+=2000',
-            scrub: 1
-          }
-        });
-      }
-
-      // Aurora stays visible throughout - no fade
+      // Mountains stay fixed - no parallax
 
       // Hero content fade out
       gsap.to('.hero-content', {
