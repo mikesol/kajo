@@ -134,6 +134,8 @@
       font-size: 0.7rem;
       letter-spacing: 0.1em;
       transition: border-color 0.3s ease;
+      mix-blend-mode: normal;
+      isolation: isolate;
     }
 
     .lang-toggle:hover {
@@ -421,21 +423,21 @@
       50% { transform: scale(1.1); opacity: 0.7; }
     }
 
-    /* Panel backgrounds - more transparency */
+    /* Panel backgrounds - tuned transparency */
     .panel-light {
-      background: rgba(248, 250, 252, 0.82);
+      background: rgba(248, 250, 252, 0.75);
       backdrop-filter: blur(20px);
       color: var(--night-blue);
     }
 
     .panel-dark {
-      background: rgba(5, 10, 18, 0.75);
+      background: rgba(5, 10, 18, 0.80);
       backdrop-filter: blur(20px);
       color: var(--ice-white);
     }
 
     .panel-twilight {
-      background: rgba(15, 29, 50, 0.75);
+      background: rgba(15, 29, 50, 0.85);
       backdrop-filter: blur(20px);
       color: var(--ice-white);
     }
