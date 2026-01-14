@@ -421,19 +421,22 @@
       50% { transform: scale(1.1); opacity: 0.7; }
     }
 
-    /* Panel backgrounds */
+    /* Panel backgrounds - subtle transparency */
     .panel-light {
-      background: var(--ice-white);
+      background: rgba(248, 250, 252, 0.92);
+      backdrop-filter: blur(20px);
       color: var(--night-blue);
     }
 
     .panel-dark {
-      background: var(--deep-night);
+      background: rgba(5, 10, 18, 0.88);
+      backdrop-filter: blur(20px);
       color: var(--ice-white);
     }
 
     .panel-twilight {
-      background: var(--midnight);
+      background: rgba(15, 29, 50, 0.88);
+      backdrop-filter: blur(20px);
       color: var(--ice-white);
     }
 
