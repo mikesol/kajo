@@ -26,6 +26,7 @@
 
       /* Aurora Colors */
       --aurora-teal: #00d4aa;
+      --aurora-teal-dark: #00997a;
       --aurora-cyan: #22d3ee;
       --aurora-purple: #8b5cf6;
       --aurora-pink: #ec4899;
@@ -350,27 +351,28 @@
     /* Section transition sentinel */
     .section-sentinel {
       position: relative;
-      width: 50px;
-      height: 50px;
-      margin: -25px auto;
+      width: 70px;
+      height: 70px;
+      margin: -35px auto;
       z-index: 100;
       pointer-events: none;
+      animation: sentinelPulse 3s ease-in-out infinite;
     }
 
     /* Rotating squares */
     .sentinel-square {
       position: absolute;
       inset: 0;
-      border: 1px solid var(--aurora-teal);
-      opacity: 0.5;
+      border: 2px solid var(--aurora-teal);
+      opacity: 0.7;
       animation: sentinelRotate 25s linear infinite;
     }
 
     .sentinel-square-inner {
       position: absolute;
-      inset: 8px;
-      border: 1px solid var(--aurora-cyan);
-      opacity: 0.4;
+      inset: 12px;
+      border: 2px solid var(--aurora-cyan);
+      opacity: 0.5;
       animation: sentinelRotate 18s linear infinite reverse;
     }
 
@@ -379,19 +381,9 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Outer pulse */
-    .section-sentinel::before {
-      content: '';
-      position: absolute;
-      inset: -8px;
-      border: 1px solid var(--aurora-teal);
-      opacity: 0.2;
-      animation: sentinelPulse 4s ease-in-out infinite;
-    }
-
     @keyframes sentinelPulse {
-      0%, 100% { transform: scale(1); opacity: 0.2; }
-      50% { transform: scale(1.2); opacity: 0.05; }
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
     }
 
     /* Panel backgrounds */
@@ -421,6 +413,10 @@
       text-transform: uppercase;
       color: var(--aurora-teal);
       margin-bottom: 1rem;
+    }
+
+    .panel-light .section-label {
+      color: var(--aurora-teal-dark);
     }
 
     .section-title {
@@ -473,6 +469,10 @@
       background: var(--aurora-teal);
       border-radius: 50%;
       flex-shrink: 0;
+    }
+
+    .panel-light .simple-list-item::before {
+      background: var(--aurora-teal-dark);
     }
 
     /* ========== PHILOSOPHY LIST ========== */
@@ -548,6 +548,16 @@
       background: var(--aurora-teal);
       color: var(--night-blue);
       box-shadow: 0 0 30px rgba(0, 212, 170, 0.3);
+    }
+
+    .panel-light .cta-button {
+      border-color: var(--aurora-teal-dark);
+      color: var(--aurora-teal-dark);
+    }
+
+    .panel-light .cta-button:hover {
+      background: var(--aurora-teal-dark);
+      color: var(--ice-white);
     }
 
     .cta-button svg {
