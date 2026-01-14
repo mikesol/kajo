@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kajo — Faint Light in Darkness</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <style>
+    :root {
+      /* Nordic Night Sky */
+      --deep-night: #050a12;
+      --night-blue: #0a1628;
+      --midnight: #0f1d32;
+      --twilight: #1a2d4a;
+
+      /* Aurora Colors */
+      --aurora-teal: #00d4aa;
+      --aurora-teal-dark: #00997a;
+      --aurora-cyan: #22d3ee;
+      --aurora-purple: #8b5cf6;
+      --aurora-pink: #ec4899;
+      --aurora-blue: #3b82f6;
+
+      /* Ice & Snow */
+      --ice-white: #f8fafc;
+      --frost: #e2e8f0;
+      --silver: #94a3b8;
+      --steel: #64748b;
+
+      /* Forest */
+      --pine-dark: #0d1117;
+      --pine-mid: #1a2332;
+      --pine-light: #2d3748;
+
+      /* Typography */
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    html.lenis {
+      height: auto;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--deep-night);
+      color: var(--ice-white);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Smooth Scroll Container */
+    .scroll-container {
+      position: relative;
+    }
+
+    /* ========== NAVIGATION ========== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(5, 10, 18, 0.8) 0%, rgba(5, 10, 18, 0) 100%);
+    }
+
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ice-white);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ice-white);
+      text-decoration: none;
+      opacity: 0.7;
+      transition: opacity 0.3s ease;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      opacity: 1;
+    }
+
+    /* Language Toggle */
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: none;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      transition: border-color 0.3s ease;
+      mix-blend-mode: normal;
+      isolation: isolate;
+    }
+
+    .lang-toggle:hover {
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .lang-option {
+      color: var(--ice-white);
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+    }
+
+    .lang-option.active {
+      opacity: 1;
+    }
+
+    .lang-divider {
+      color: var(--ice-white);
+      opacity: 0.3;
+    }
+
+    /* Section Indicator */
+    .section-indicator {
+      position: fixed;
+      right: 2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ice-white);
+      opacity: 0.3;
+      transition: all 0.4s ease;
+      cursor: pointer;
+    }
+
+    .indicator-dot.active {
+      opacity: 1;
+      transform: scale(1.5);
+      background: var(--aurora-teal);
+      box-shadow: 0 0 20px var(--aurora-teal);
+    }
+
+    /* ========== FIXED AURORA BACKGROUND ========== */
+    .aurora-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #aurora-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Mountain Silhouettes - Fixed */
+    .mountains-svg {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 45%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Water Reflection - Fixed */
+    .water-reflection {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 15%;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 15, 25, 0.4) 0%,
+        rgba(0, 20, 30, 0.7) 50%,
+        rgba(0, 15, 25, 0.9) 100%
+      );
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .water-reflection::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0, 180, 140, 0.03) 30%,
+        rgba(0, 200, 160, 0.06) 50%,
+        rgba(0, 180, 140, 0.03) 70%,
+        transparent 100%
+      );
+      animation: shimmer 10s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+
+    /* ========== HERO SECTION ========== */
+    .hero {
+      position: relative;
+      height: 100vh;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Hero Content */
+    .hero-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(4rem, 15vw, 12rem);
+      font-weight: 300;
+      letter-spacing: 0.3em;
+      margin-left: 0.3em; /* Compensate for letter-spacing */
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      background: linear-gradient(
+        180deg,
+        var(--ice-white) 0%,
+        var(--aurora-teal) 50%,
+        var(--aurora-cyan) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 1.5s ease-out 0.5s forwards;
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-display);
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: 0.2em;
+      color: var(--silver);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1.2s ease-out 1s forwards;
+    }
+
+    .hero-tagline {
+      margin-top: 3rem;
+      font-size: 0.875rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--frost);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1.2s ease-out 1.4s forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 2s forwards;
+    }
+
+    .scroll-indicator span {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--silver);
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 60px;
+      background: linear-gradient(to bottom, var(--aurora-teal), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { transform: scaleY(1); opacity: 1; }
+      50% { transform: scaleY(0.5); opacity: 0.5; }
+    }
+
+    /* ========== CONTENT SECTIONS - HALF SCREEN PANELS ========== */
+    .section {
+      position: relative;
+      min-height: 100vh;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Half-width panel */
+    .panel {
+      width: 50%;
+      min-height: 100vh;
+      padding: 8rem 4rem 6rem 4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* Panel positions */
+    .panel-left {
+      margin-right: auto;
+    }
+
+    .panel-right {
+      margin-left: auto;
+    }
+
+    /* Section transition sentinel */
+    .section-sentinel {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      margin: -35px auto;
+      z-index: 50;
+      pointer-events: none;
+      animation: sentinelPulse 3s ease-in-out infinite;
+    }
+
+    /* Rotating squares */
+    .sentinel-square {
+      position: absolute;
+      inset: 0;
+      border: 2px solid var(--aurora-teal);
+      opacity: 0.7;
+      animation: sentinelRotate 25s linear infinite;
+    }
+
+    .sentinel-square-inner {
+      position: absolute;
+      inset: 12px;
+      border: 2px solid var(--aurora-cyan);
+      opacity: 0.5;
+      animation: sentinelRotate 18s linear infinite reverse;
+    }
+
+    @keyframes sentinelRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes sentinelPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.7; }
+    }
+
+    /* Panel backgrounds - tuned transparency */
+    .panel-light {
+      background: rgba(248, 250, 252, 0.75);
+      backdrop-filter: blur(20px);
+      color: var(--night-blue);
+    }
+
+    .panel-dark {
+      background: rgba(5, 10, 18, 0.80);
+      backdrop-filter: blur(20px);
+      color: var(--ice-white);
+    }
+
+    .panel-twilight {
+      background: rgba(15, 29, 50, 0.85);
+      backdrop-filter: blur(20px);
+      color: var(--ice-white);
+    }
+
+    .section-container {
+      max-width: 600px;
+    }
+
+    /* Section Headers */
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--aurora-teal);
+      margin-bottom: 1rem;
+    }
+
+    .panel-light .section-label {
+      color: var(--aurora-teal-dark);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 2rem;
+    }
+
+    .panel-light .section-title {
+      color: var(--night-blue);
+    }
+
+    .section-description {
+      font-size: 1.125rem;
+      line-height: 1.8;
+      max-width: 500px;
+      color: var(--silver);
+    }
+
+    .panel-light .section-description {
+      color: var(--twilight);
+    }
+
+    /* Simple list for minimal content */
+    .simple-list {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .simple-list-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 1rem;
+      color: var(--silver);
+    }
+
+    .panel-light .simple-list-item {
+      color: var(--twilight);
+    }
+
+    .simple-list-item::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--aurora-teal);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .panel-light .simple-list-item::before {
+      background: var(--aurora-teal-dark);
+    }
+
+    /* ========== PHILOSOPHY LIST ========== */
+    .philosophy-list {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .philosophy-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .philosophy-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+
+    .philosophy-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: var(--aurora-teal);
+      fill: none;
+      stroke-width: 1.5;
+    }
+
+    .philosophy-text h4 {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 0.15rem;
+      color: var(--ice-white);
+    }
+
+    .panel-light .philosophy-text h4 {
+      color: var(--night-blue);
+    }
+
+    .philosophy-text p {
+      font-size: 0.85rem;
+      color: var(--silver);
+    }
+
+    .panel-light .philosophy-text p {
+      color: var(--steel);
+    }
+
+    /* ========== CTA BUTTON ========== */
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      background: transparent;
+      border: 1px solid var(--aurora-teal);
+      color: var(--aurora-teal);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 2rem;
+    }
+
+    .cta-button:hover {
+      background: var(--aurora-teal);
+      color: var(--night-blue);
+      box-shadow: 0 0 30px rgba(0, 212, 170, 0.3);
+    }
+
+    .panel-light .cta-button {
+      border-color: var(--aurora-teal-dark);
+      color: var(--aurora-teal-dark);
+    }
+
+    .panel-light .cta-button:hover {
+      background: var(--aurora-teal-dark);
+      color: var(--ice-white);
+    }
+
+    .cta-button svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      transition: transform 0.3s ease;
+    }
+
+    .cta-button:hover svg {
+      transform: translateX(4px);
+    }
+
+    /* ========== FOOTER ========== */
+    footer {
+      position: relative;
+      z-index: 10;
+      padding: 4rem 3rem;
+      background: var(--deep-night);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ice-white);
+    }
+
+    .footer-text {
+      font-size: 0.8rem;
+      color: var(--steel);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .footer-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--silver);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--aurora-teal);
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 1024px) {
+      .panel {
+        width: 65%;
+        padding: 7rem 3rem 5rem 3rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav {
+        padding: 1rem 1.5rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .panel {
+        width: 100%;
+        padding: 6rem 2rem 4rem 2rem;
+      }
+
+      .section-indicator {
+        display: none;
+      }
+
+      .footer-content {
+        flex-direction: column;
+        gap: 2rem;
+        text-align: center;
+      }
+
+      .section-title {
+        font-size: clamp(2rem, 8vw, 3rem);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <a href="#" class="nav-logo">Kajo</a>
+    <ul class="nav-links">
+      <li><a href="#about" data-i18n="nav.about">Tietoa meistä</a></li>
+      <li><a href="#sellers" data-i18n="nav.sellers">Myyjille</a></li>
+      <li><a href="#investors" data-i18n="nav.investors">Sijoittajille</a></li>
+      <li><a href="#operators" data-i18n="nav.operators">Operoijille</a></li>
+    </ul>
+    <button class="lang-toggle" id="lang-toggle">
+      <span class="lang-option active" data-lang="fi">FI</span>
+      <span class="lang-divider">/</span>
+      <span class="lang-option" data-lang="en">EN</span>
+    </button>
+  </nav>
+
+  <!-- Section Indicator -->
+  <div class="section-indicator">
+    <div class="indicator-dot active" data-section="hero"></div>
+    <div class="indicator-dot" data-section="about"></div>
+    <div class="indicator-dot" data-section="sellers"></div>
+    <div class="indicator-dot" data-section="investors"></div>
+    <div class="indicator-dot" data-section="operators"></div>
+  </div>
+
+  <!-- FIXED AURORA BACKGROUND -->
+  <div class="aurora-bg">
+    <canvas id="aurora-canvas"></canvas>
+
+    <!-- Mountain Silhouettes -->
+    <svg class="mountains-svg" viewBox="0 0 1920 500" preserveAspectRatio="xMidYMax slice">
+      <!-- Far distant mountains -->
+      <path class="mountain-layer mountain-far" fill="#0c1824" opacity="0.4" d="M0,500 L0,380 L120,340 L280,380 L400,300 L580,350 L720,260 L900,320 L1050,240 L1200,300 L1350,220 L1500,280 L1650,240 L1800,300 L1920,260 L1920,500 Z"/>
+      <!-- Distant mountains -->
+      <path class="mountain-layer mountain-mid" fill="#081018" opacity="0.7" d="M0,500 L0,400 L100,360 L220,400 L380,320 L500,370 L680,280 L850,340 L1000,260 L1180,320 L1320,250 L1480,310 L1640,270 L1800,330 L1920,290 L1920,500 Z"/>
+      <!-- Near mountains -->
+      <path class="mountain-layer mountain-near" fill="#040810" d="M0,500 L0,420 L80,390 L200,420 L340,350 L480,400 L620,320 L800,380 L950,300 L1120,360 L1280,290 L1440,350 L1600,300 L1760,360 L1920,320 L1920,500 Z"/>
+    </svg>
+
+    <!-- Water/Lake Reflection -->
+    <div class="water-reflection"></div>
+  </div>
+
+  <div class="scroll-container">
+    <!-- HERO SECTION -->
+    <section class="hero" id="hero">
+      <!-- Hero Content -->
+      <div class="hero-content">
+        <h1 class="hero-title">Kajo</h1>
+        <p class="hero-tagline" data-i18n="hero.tagline">Pohjoismainen sijoitusyhtiö</p>
+      </div>
+
+      <!-- Scroll Indicator -->
+      <div class="scroll-indicator">
+        <span data-i18n="hero.scroll">Vieritä</span>
+        <div class="scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- ABOUT SECTION - LEFT PANEL -->
+    <section class="section" id="about">
+      <div class="panel panel-left panel-light">
+        <div class="section-container">
+          <span class="section-label" data-i18n="about.label">Tietoa meistä</span>
+          <h2 class="section-title" data-i18n="about.title" data-i18n-html="true">Rakennamme perintöjä<br>pohjoisessa valossa</h2>
+          <p class="section-description" data-i18n="about.desc1">
+            Löydämme poikkeuksellisia yrityksiä ja kasvatamme ne täyteen potentiaaliinsa.
+          </p>
+          <p class="section-description" style="margin-top: 1rem;" data-i18n="about.desc2">
+            Tarjoamme kilpailukykyisiä ja reiluja hintoja kestäville yrityksille käännekohdissa: eläköityminen, omistajanvaihdokset tai perustajat valmiina seuraavaan vaiheeseen.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-sentinel">
+      <div class="sentinel-square"></div>
+      <div class="sentinel-square-inner"></div>
+    </div>
+
+    <!-- SELLERS SECTION - RIGHT PANEL -->
+    <section class="section" id="sellers">
+      <div class="panel panel-right panel-dark">
+        <div class="section-container">
+          <span class="section-label" data-i18n="sellers.label">Myyjille</span>
+          <h2 class="section-title" data-i18n="sellers.title" data-i18n-html="true">Perintösi,<br>suojattuna</h2>
+          <p class="section-description" data-i18n="sellers.desc">
+            Kun on aika siirtyä eteenpäin, tarjoamme enemmän kuin pääomaa.
+          </p>
+
+          <div class="simple-list">
+            <div class="simple-list-item" data-i18n="sellers.point1">Harkitut siirtymät, jotka kunnioittavat kulttuuriasi</div>
+            <div class="simple-list-item" data-i18n="sellers.point2">Ansaitse osinkoja myynnin jälkeen yhteisten tavoitteiden perusteella</div>
+            <div class="simple-list-item" data-i18n="sellers.point3">Asiantuntijoita yritysten asteittaisessa digitalisoinnissa</div>
+          </div>
+
+          <a href="#" class="cta-button" data-i18n="sellers.cta">
+            Aloita keskustelu
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-sentinel">
+      <div class="sentinel-square"></div>
+      <div class="sentinel-square-inner"></div>
+    </div>
+
+    <!-- INVESTORS SECTION - LEFT PANEL -->
+    <section class="section" id="investors">
+      <div class="panel panel-left panel-twilight">
+        <div class="section-container">
+          <span class="section-label" data-i18n="investors.label">Sijoittajille</span>
+          <h2 class="section-title" data-i18n="investors.title" data-i18n-html="true">Kärsivällistä pääomaa,<br>poikkeuksellisia tuottoja</h2>
+          <p class="section-description" data-i18n="investors.desc">
+            Teemme yhteistyötä niiden kanssa, jotka jakavat pitkän aikavälin visiomme.
+          </p>
+
+          <div class="simple-list">
+            <div class="simple-list-item" data-i18n="investors.point1">Institutionaaliset sijoittajat ja family officet</div>
+            <div class="simple-list-item" data-i18n="investors.point2">Rahastorakenne, joka palkitsee kärsivällisyyden</div>
+            <div class="simple-list-item" data-i18n="investors.point3">Suomeen keskittynyt, institutionaaliset standardit</div>
+          </div>
+
+          <a href="#" class="cta-button" data-i18n="investors.cta">
+            Sijoitusmahdollisuudet
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-sentinel">
+      <div class="sentinel-square"></div>
+      <div class="sentinel-square-inner"></div>
+    </div>
+
+    <!-- OPERATORS SECTION - RIGHT PANEL -->
+    <section class="section" id="operators">
+      <div class="panel panel-right panel-light">
+        <div class="section-container">
+          <span class="section-label" data-i18n="operators.label">Operoijille</span>
+          <h2 class="section-title" data-i18n="operators.title" data-i18n-html="true">Rakenna jotain<br>merkittävää</h2>
+          <p class="section-description" data-i18n="operators.desc">
+            Etsimme poikkeuksellisia osaajia liittymään portfolioyhtiöihimme ja muokkaamaan tulevaisuutta.
+          </p>
+
+          <div class="simple-list">
+            <div class="simple-list-item" data-i18n="operators.point1">CEO-, CFO- ja hallituspaikkoja avoinna</div>
+            <div class="simple-list-item" data-i18n="operators.point2">Todellista omistajuutta, todellista vaikutusta</div>
+            <div class="simple-list-item" data-i18n="operators.point3">Käytännön rooleja kasvavissa suomalaisissa yrityksissä</div>
+          </div>
+
+          <a href="#" class="cta-button" data-i18n="operators.cta">
+            Katso avoimet paikat
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-content">
+        <div class="footer-logo">Kajo</div>
+        <p class="footer-text">© 2026 Kajo Partners. Helsinki, Suomi.</p>
+        <div class="footer-links">
+          <a href="#" data-i18n="footer.privacy">Tietosuoja</a>
+          <a href="#" data-i18n="footer.terms">Ehdot</a>
+          <a href="#" data-i18n="footer.contact">Yhteystiedot</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // ========== THREE.JS AURORA BOREALIS ==========
+    function initAurora() {
+      const canvas = document.getElementById('aurora-canvas');
+      if (!canvas) return;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+        alpha: false
+      });
+
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Aurora Shader
+      const vertexShader = `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position, 1.0);
+        }
+      `;
+
+      const fragmentShader = `
+        uniform float uTime;
+        uniform float uScroll;
+        uniform vec2 uResolution;
+        varying vec2 vUv;
+
+        // Simplex noise functions
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+        float snoise(vec2 v) {
+          const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                             -0.577350269189626, 0.024390243902439);
+          vec2 i  = floor(v + dot(v, C.yy));
+          vec2 x0 = v -   i + dot(i, C.xx);
+          vec2 i1;
+          i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+          vec4 x12 = x0.xyxy + C.xxzz;
+          x12.xy -= i1;
+          i = mod289(i);
+          vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
+            + i.x + vec3(0.0, i1.x, 1.0));
+          vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
+            dot(x12.zw,x12.zw)), 0.0);
+          m = m*m;
+          m = m*m;
+          vec3 x = 2.0 * fract(p * C.www) - 1.0;
+          vec3 h = abs(x) - 0.5;
+          vec3 ox = floor(x + 0.5);
+          vec3 a0 = x - ox;
+          m *= 1.79284291400159 - 0.85373472095314 * (a0*a0 + h*h);
+          vec3 g;
+          g.x  = a0.x  * x0.x  + h.x  * x0.y;
+          g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+          return 130.0 * dot(m, g);
+        }
+
+        // Fractal Brownian Motion
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amplitude = 0.5;
+          float frequency = 1.0;
+          for (int i = 0; i < 6; i++) {
+            value += amplitude * snoise(p * frequency);
+            frequency *= 2.0;
+            amplitude *= 0.5;
+          }
+          return value;
+        }
+
+        // Aurora ribbon function
+        float auroraRibbon(vec2 uv, float time, float offset, float speed, float width) {
+          float y = uv.y + offset;
+          float wave1 = snoise(vec2(uv.x * 2.0 + time * speed, time * 0.1)) * 0.15;
+          float wave2 = snoise(vec2(uv.x * 4.0 - time * speed * 0.7, time * 0.15 + 10.0)) * 0.08;
+          float wave3 = snoise(vec2(uv.x * 8.0 + time * speed * 0.3, time * 0.2 + 20.0)) * 0.04;
+          float displacement = wave1 + wave2 + wave3;
+
+          float ribbon = smoothstep(width, 0.0, abs(y - 0.5 - displacement));
+          ribbon *= smoothstep(0.0, 0.3, uv.y) * smoothstep(1.0, 0.6, uv.y);
+
+          // Add intensity variation
+          float intensity = snoise(vec2(uv.x * 3.0 + time * 0.5, time * 0.1)) * 0.5 + 0.5;
+          ribbon *= 0.5 + intensity * 0.5;
+
+          return ribbon;
+        }
+
+        void main() {
+          vec2 uv = vUv;
+          float aspectRatio = uResolution.x / uResolution.y;
+          vec2 scaledUv = vec2(uv.x * aspectRatio, uv.y);
+
+          // Scroll affects time speed and aurora intensity
+          float scrollInfluence = uScroll * 0.5;
+          float time = uTime * 0.15 + scrollInfluence * 2.0;
+
+          // Deep night sky gradient
+          vec3 skyTop = vec3(0.01, 0.02, 0.05);
+          vec3 skyMid = vec3(0.02, 0.04, 0.08);
+          vec3 skyBottom = vec3(0.01, 0.03, 0.06);
+          vec3 sky = mix(skyBottom, skyMid, smoothstep(0.0, 0.5, uv.y));
+          sky = mix(sky, skyTop, smoothstep(0.5, 1.0, uv.y));
+
+          // Stars
+          float stars = 0.0;
+          for (float i = 0.0; i < 3.0; i++) {
+            vec2 starUv = scaledUv * (50.0 + i * 30.0);
+            float star = snoise(starUv + i * 100.0);
+            star = pow(max(0.0, star), 20.0) * (0.3 + 0.7 * sin(time * 2.0 + i));
+            stars += star * (0.5 + i * 0.2);
+          }
+          sky += vec3(stars * 0.8, stars * 0.9, stars);
+
+          // Aurora colors
+          vec3 auroraGreen1 = vec3(0.1, 0.9, 0.5);
+          vec3 auroraGreen2 = vec3(0.2, 0.8, 0.4);
+          vec3 auroraTeal = vec3(0.1, 0.7, 0.6);
+          vec3 auroraPurple = vec3(0.4, 0.2, 0.6);
+          vec3 auroraBlue = vec3(0.2, 0.4, 0.8);
+
+          // Multiple aurora ribbons with different properties
+          float ribbon1 = auroraRibbon(uv, time, 0.15, 0.3, 0.12);
+          float ribbon2 = auroraRibbon(uv, time * 1.1, 0.05, 0.25, 0.10);
+          float ribbon3 = auroraRibbon(uv, time * 0.9, 0.25, 0.35, 0.08);
+          float ribbon4 = auroraRibbon(uv, time * 1.2, -0.05, 0.2, 0.15);
+          float ribbon5 = auroraRibbon(uv, time * 0.8, 0.35, 0.28, 0.06);
+
+          // Color mixing based on position and noise
+          float colorMix = fbm(scaledUv * 0.5 + time * 0.1) * 0.5 + 0.5;
+          float colorMix2 = fbm(scaledUv * 0.3 - time * 0.05 + 50.0) * 0.5 + 0.5;
+
+          vec3 aurora1Color = mix(auroraGreen1, auroraGreen2, colorMix);
+          vec3 aurora2Color = mix(auroraTeal, auroraGreen1, colorMix2);
+          vec3 aurora3Color = mix(auroraGreen2, auroraTeal, colorMix);
+          vec3 aurora4Color = mix(auroraGreen1, auroraPurple, colorMix2 * 0.3);
+          vec3 aurora5Color = mix(auroraTeal, auroraBlue, colorMix * 0.4);
+
+          // Combine aurora layers - scroll subtly boosts intensity
+          float intensityBoost = 1.0 + scrollInfluence * 0.3;
+          vec3 aurora = vec3(0.0);
+          aurora += aurora1Color * ribbon1 * 0.7 * intensityBoost;
+          aurora += aurora2Color * ribbon2 * 0.6 * intensityBoost;
+          aurora += aurora3Color * ribbon3 * 0.5 * intensityBoost;
+          aurora += aurora4Color * ribbon4 * 0.8 * intensityBoost;
+          aurora += aurora5Color * ribbon5 * 0.4 * intensityBoost;
+
+          // Add glow effect
+          float glow = (ribbon1 + ribbon2 + ribbon3 + ribbon4 + ribbon5) * 0.15;
+          vec3 glowColor = mix(auroraGreen1, auroraTeal, 0.5) * glow;
+          aurora += glowColor;
+
+          // Add subtle vertical rays
+          float rays = 0.0;
+          for (float i = 0.0; i < 5.0; i++) {
+            float rayX = snoise(vec2(i * 10.0, time * 0.2)) * 0.5 + 0.5;
+            float ray = smoothstep(0.02, 0.0, abs(uv.x - rayX));
+            ray *= smoothstep(0.3, 0.7, uv.y) * smoothstep(1.0, 0.5, uv.y);
+            ray *= snoise(vec2(uv.y * 20.0 + time + i, i)) * 0.5 + 0.5;
+            rays += ray * 0.1;
+          }
+          aurora += auroraGreen1 * rays;
+
+          // Final composition
+          vec3 color = sky + aurora;
+
+          // Add subtle vignette
+          float vignette = 1.0 - smoothstep(0.5, 1.5, length(uv - 0.5) * 1.5);
+          color *= 0.7 + vignette * 0.3;
+
+          // Tone mapping
+          color = color / (color + vec3(1.0));
+          color = pow(color, vec3(0.95));
+
+          gl_FragColor = vec4(color, 1.0);
+        }
+      `;
+
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      const material = new THREE.ShaderMaterial({
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        uniforms: {
+          uTime: { value: 0 },
+          uScroll: { value: 0 },
+          uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        }
+      });
+
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      // Scroll tracking
+      let targetScroll = 0;
+      let currentScroll = 0;
+
+      window.addEventListener('scroll', () => {
+        const maxScroll = document.body.scrollHeight - window.innerHeight;
+        targetScroll = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+      }, { passive: true });
+
+      // Animation loop with scroll
+      function animate() {
+        currentScroll += (targetScroll - currentScroll) * 0.1;
+        material.uniforms.uScroll.value = currentScroll;
+        material.uniforms.uTime.value += 0.016;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        material.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+      });
+
+      animate();
+    }
+
+    // ========== SMOOTH SCROLL (Lenis-style) ==========
+    class SmoothScroll {
+      constructor() {
+        this.currentY = 0;
+        this.targetY = 0;
+        this.ease = 0.075;
+        this.rafId = null;
+        this.init();
+      }
+
+      init() {
+        document.documentElement.classList.add('lenis');
+        this.update();
+      }
+
+      update() {
+        this.targetY = window.scrollY;
+        this.currentY += (this.targetY - this.currentY) * this.ease;
+
+        // Update CSS custom property for parallax
+        const hero = document.querySelector('.hero');
+        if (hero) {
+          const heroHeight = hero.offsetHeight;
+          const progress = Math.min(this.currentY / (heroHeight * 0.5), 1);
+          document.documentElement.style.setProperty('--scroll-progress', progress);
+        }
+
+        this.rafId = requestAnimationFrame(() => this.update());
+      }
+    }
+
+    // ========== SNOW PARTICLES ==========
+    function createSnow() {
+      const container = document.getElementById('snow');
+      const particleCount = 50;
+
+      for (let i = 0; i < particleCount; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.className = 'snowflake';
+        snowflake.style.left = Math.random() * 100 + '%';
+        snowflake.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        snowflake.style.animationDelay = Math.random() * 10 + 's';
+        snowflake.style.width = (Math.random() * 3 + 2) + 'px';
+        snowflake.style.height = snowflake.style.width;
+        snowflake.style.opacity = Math.random() * 0.5 + 0.3;
+        container.appendChild(snowflake);
+      }
+    }
+
+    // ========== INTERSECTION OBSERVER FOR ANIMATIONS ==========
+    function setupScrollAnimations() {
+      const sections = document.querySelectorAll('.section');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+
+            // Update section indicator
+            const sectionId = entry.target.id;
+            document.querySelectorAll('.indicator-dot').forEach(dot => {
+              dot.classList.toggle('active', dot.dataset.section === sectionId);
+            });
+
+            // Update nav links
+            document.querySelectorAll('.nav-links a').forEach(link => {
+              link.classList.toggle('active', link.getAttribute('href') === '#' + sectionId);
+            });
+          }
+        });
+      }, {
+        threshold: 0.3,
+        rootMargin: '-10% 0px -10% 0px'
+      });
+
+      sections.forEach(section => observer.observe(section));
+
+      // Also observe hero
+      const hero = document.querySelector('.hero');
+      const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            document.querySelectorAll('.indicator-dot').forEach(dot => {
+              dot.classList.toggle('active', dot.dataset.section === 'hero');
+            });
+          }
+        });
+      }, { threshold: 0.5 });
+      heroObserver.observe(hero);
+    }
+
+    // ========== SECTION INDICATOR CLICKS ==========
+    function setupIndicatorClicks() {
+      document.querySelectorAll('.indicator-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const sectionId = dot.dataset.section;
+          const section = document.getElementById(sectionId);
+          if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+    }
+
+    // ========== GSAP SCROLL EFFECTS ==========
+    function setupGSAPEffects() {
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Hero content fade out
+      gsap.to('.hero-content', {
+        opacity: 0,
+        y: -50,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top top',
+          end: 'bottom 60%',
+          scrub: true
+        }
+      });
+
+      // Scroll indicator fade
+      gsap.to('.scroll-indicator', {
+        opacity: 0,
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top top',
+          end: '+=200',
+          scrub: true
+        }
+      });
+
+    }
+
+    // Pass scroll position to aurora shader
+    let auroraScrollValue = 0;
+    function updateAuroraScroll() {
+      const scrollY = window.scrollY;
+      const maxScroll = document.body.scrollHeight - window.innerHeight;
+      auroraScrollValue = scrollY / maxScroll;
+    }
+
+    // ========== INTERNATIONALIZATION ==========
+    const translations = {
+      fi: {
+        'nav.about': 'Tietoa meistä',
+        'nav.sellers': 'Myyjille',
+        'nav.investors': 'Sijoittajille',
+        'nav.operators': 'Operoijille',
+        'hero.tagline': 'Pohjoismainen sijoitusyhtiö',
+        'hero.scroll': 'Vieritä',
+        'about.label': 'Tietoa meistä',
+        'about.title': 'Rakennamme perintöjä<br>pohjoisessa valossa',
+        'about.desc1': 'Löydämme poikkeuksellisia yrityksiä ja kasvatamme ne täyteen potentiaaliinsa.',
+        'about.desc2': 'Tarjoamme kilpailukykyisiä ja reiluja hintoja kestäville yrityksille käännekohdissa: eläköityminen, omistajanvaihdokset tai perustajat valmiina seuraavaan vaiheeseen.',
+        'sellers.label': 'Myyjille',
+        'sellers.title': 'Perintösi,<br>suojattuna',
+        'sellers.desc': 'Kun on aika siirtyä eteenpäin, tarjoamme enemmän kuin pääomaa.',
+        'sellers.point1': 'Harkitut siirtymät, jotka kunnioittavat kulttuuriasi',
+        'sellers.point2': 'Ansaitse osinkoja myynnin jälkeen yhteisten tavoitteiden perusteella',
+        'sellers.point3': 'Asiantuntijoita yritysten asteittaisessa digitalisoinnissa',
+        'sellers.cta': 'Aloita keskustelu',
+        'investors.label': 'Sijoittajille',
+        'investors.title': 'Kärsivällistä pääomaa,<br>poikkeuksellisia tuottoja',
+        'investors.desc': 'Teemme yhteistyötä niiden kanssa, jotka jakavat pitkän aikavälin visiomme.',
+        'investors.point1': 'Institutionaaliset sijoittajat ja family officet',
+        'investors.point2': 'Rahastorakenne, joka palkitsee kärsivällisyyden',
+        'investors.point3': 'Suomeen keskittynyt, institutionaaliset standardit',
+        'investors.cta': 'Sijoitusmahdollisuudet',
+        'operators.label': 'Operoijille',
+        'operators.title': 'Rakenna jotain<br>merkittävää',
+        'operators.desc': 'Etsimme poikkeuksellisia osaajia liittymään portfolioyhtiöihimme ja muokkaamaan tulevaisuutta.',
+        'operators.point1': 'CEO-, CFO- ja hallituspaikkoja avoinna',
+        'operators.point2': 'Todellista omistajuutta, todellista vaikutusta',
+        'operators.point3': 'Käytännön rooleja kasvavissa suomalaisissa yrityksissä',
+        'operators.cta': 'Katso avoimet paikat',
+        'footer.privacy': 'Tietosuoja',
+        'footer.terms': 'Ehdot',
+        'footer.contact': 'Yhteystiedot'
+      },
+      en: {
+        'nav.about': 'About',
+        'nav.sellers': 'Sellers',
+        'nav.investors': 'Investors',
+        'nav.operators': 'Operators',
+        'hero.tagline': 'A Nordic Investment Firm',
+        'hero.scroll': 'Scroll',
+        'about.label': 'Who We Are',
+        'about.title': 'Building legacies<br>in northern light',
+        'about.desc1': 'We find exceptional companies and nurture them toward their full potential.',
+        'about.desc2': 'We offer competitive and fair prices for sustainable companies at inflection points: retirement, ownership transitions, or founders ready for their next chapter.',
+        'sellers.label': 'For Sellers',
+        'sellers.title': 'Your legacy,<br>protected',
+        'sellers.desc': "When it's time to transition, we offer more than capital.",
+        'sellers.point1': 'Thoughtful transitions that honor your culture',
+        'sellers.point2': 'Earn dividends after sale based on shared milestones',
+        'sellers.point3': 'Experts at progressively digitalizing companies',
+        'sellers.cta': 'Start a conversation',
+        'investors.label': 'For Investors',
+        'investors.title': 'Patient capital,<br>exceptional returns',
+        'investors.desc': 'We partner with those who share our long-term vision.',
+        'investors.point1': 'Institutional investors and family offices',
+        'investors.point2': 'Fund structure that rewards patience',
+        'investors.point3': 'Finland-focused, institutional standards',
+        'investors.cta': 'Investment opportunities',
+        'operators.label': 'For Operators',
+        'operators.title': 'Build something<br>remarkable',
+        'operators.desc': "We're looking for exceptional talent to join our portfolio companies and shape the future.",
+        'operators.point1': 'CEO, CFO, and board positions available',
+        'operators.point2': 'Real equity, real impact',
+        'operators.point3': 'Hands-on roles in growing Finnish companies',
+        'operators.cta': 'View opportunities',
+        'footer.privacy': 'Privacy',
+        'footer.terms': 'Terms',
+        'footer.contact': 'Contact'
+      }
+    };
+
+    let currentLang = 'fi';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const t = translations[lang];
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+          if (el.hasAttribute('data-i18n-html')) {
+            el.innerHTML = t[key];
+          } else {
+            // Preserve child elements (like SVGs in buttons)
+            const svg = el.querySelector('svg');
+            if (svg) {
+              el.innerHTML = t[key] + ' ';
+              el.appendChild(svg);
+            } else {
+              el.textContent = t[key];
+            }
+          }
+        }
+      });
+
+      // Update toggle UI
+      document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.lang === lang);
+      });
+
+      // Store preference
+      localStorage.setItem('kajo-lang', lang);
+    }
+
+    function setupLanguageToggle() {
+      const toggle = document.getElementById('lang-toggle');
+      if (!toggle) return;
+
+      toggle.addEventListener('click', () => {
+        setLanguage(currentLang === 'fi' ? 'en' : 'fi');
+      });
+
+      // Check for stored preference
+      const stored = localStorage.getItem('kajo-lang');
+      if (stored && stored !== currentLang) {
+        setLanguage(stored);
+      }
+    }
+
+    // ========== INITIALIZE ==========
+    document.addEventListener('DOMContentLoaded', () => {
+      initAurora();
+      setupGSAPEffects();
+      setupScrollAnimations();
+      setupIndicatorClicks();
+      setupLanguageToggle();
+
+      // Update aurora on scroll
+      window.addEventListener('scroll', updateAuroraScroll, { passive: true });
+    });
+  </script>
+</body>
+</html>
