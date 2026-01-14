@@ -341,10 +341,26 @@
     /* Panel positions */
     .panel-left {
       margin-right: auto;
+      transform: translateX(-40%);
+      opacity: 0.5;
     }
 
     .panel-right {
       margin-left: auto;
+      transform: translateX(40%);
+      opacity: 0.5;
+    }
+
+    /* Panel animation - CSS driven */
+    .panel {
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform, opacity;
+    }
+
+    .panel.in-view {
+      transform: translateX(0);
+      opacity: 1;
     }
 
     /* Panel backgrounds */
@@ -1129,33 +1145,18 @@
         }
       });
 
-      // Panels fly in/out from their sides - triggered, not scrubbed
+      // Panels fly in/out - CSS animation, JS just toggles class
       document.querySelectorAll('.panel').forEach(panel => {
-        const isLeft = panel.classList.contains('panel-left');
-        const xStart = isLeft ? '-40%' : '40%';
         const section = panel.closest('.section');
 
-        // Set initial state
-        gsap.set(panel, { x: xStart, opacity: 0.5 });
-
-        // Create timeline for this panel
-        const tl = gsap.timeline({ paused: true });
-        tl.to(panel, {
-          x: '0%',
-          opacity: 1,
-          duration: 0.6,
-          ease: 'power2.out'
-        });
-
-        // Trigger in when section enters
         ScrollTrigger.create({
           trigger: section,
           start: 'top 75%',
           end: 'bottom 25%',
-          onEnter: () => tl.play(),
-          onLeave: () => tl.reverse(),
-          onEnterBack: () => tl.play(),
-          onLeaveBack: () => tl.reverse()
+          onEnter: () => panel.classList.add('in-view'),
+          onLeave: () => panel.classList.remove('in-view'),
+          onEnterBack: () => panel.classList.add('in-view'),
+          onLeaveBack: () => panel.classList.remove('in-view')
         });
       });
     }
