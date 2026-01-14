@@ -374,9 +374,6 @@
       text-transform: uppercase;
       color: var(--aurora-teal);
       margin-bottom: 1rem;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.8s ease-out;
     }
 
     .section-title {
@@ -385,9 +382,6 @@
       font-weight: 300;
       line-height: 1.1;
       margin-bottom: 2rem;
-      opacity: 0;
-      transform: translateY(30px);
-      transition: all 0.8s ease-out 0.1s;
     }
 
     .panel-light .section-title {
@@ -399,9 +393,6 @@
       line-height: 1.8;
       max-width: 500px;
       color: var(--silver);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.8s ease-out 0.2s;
     }
 
     .panel-light .section-description {
@@ -422,9 +413,6 @@
       gap: 1rem;
       font-size: 1rem;
       color: var(--silver);
-      opacity: 0;
-      transform: translateY(15px);
-      transition: all 0.6s ease-out;
     }
 
     .panel-light .simple-list-item {
@@ -440,23 +428,6 @@
       flex-shrink: 0;
     }
 
-    .section.in-view .simple-list-item:nth-child(1) { transition-delay: 0.3s; }
-    .section.in-view .simple-list-item:nth-child(2) { transition-delay: 0.4s; }
-    .section.in-view .simple-list-item:nth-child(3) { transition-delay: 0.5s; }
-    .section.in-view .simple-list-item:nth-child(4) { transition-delay: 0.6s; }
-
-    .section.in-view .simple-list-item {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .section.in-view .section-label,
-    .section.in-view .section-title,
-    .section.in-view .section-description {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
     /* ========== PHILOSOPHY LIST ========== */
     .philosophy-list {
       margin-top: 2.5rem;
@@ -469,18 +440,6 @@
       display: flex;
       align-items: flex-start;
       gap: 1rem;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.6s ease-out;
-    }
-
-    .section.in-view .philosophy-item:nth-child(1) { transition-delay: 0.4s; }
-    .section.in-view .philosophy-item:nth-child(2) { transition-delay: 0.5s; }
-    .section.in-view .philosophy-item:nth-child(3) { transition-delay: 0.6s; }
-
-    .section.in-view .philosophy-item {
-      opacity: 1;
-      transform: translateY(0);
     }
 
     .philosophy-icon {
@@ -534,16 +493,8 @@
       text-transform: uppercase;
       text-decoration: none;
       cursor: pointer;
-      transition: all 0.4s ease;
+      transition: all 0.3s ease;
       margin-top: 2rem;
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    .section.in-view .cta-button {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.5s;
     }
 
     .cta-button:hover {
