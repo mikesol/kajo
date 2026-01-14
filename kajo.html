@@ -1129,38 +1129,33 @@
         }
       });
 
-      // Panels fly in/out from their sides
+      // Panels fly in/out from their sides - triggered, not scrubbed
       document.querySelectorAll('.panel').forEach(panel => {
         const isLeft = panel.classList.contains('panel-left');
         const xStart = isLeft ? '-40%' : '40%';
+        const section = panel.closest('.section');
 
         // Set initial state
         gsap.set(panel, { x: xStart, opacity: 0.5 });
 
-        // Fly in
-        gsap.to(panel, {
+        // Create timeline for this panel
+        const tl = gsap.timeline({ paused: true });
+        tl.to(panel, {
           x: '0%',
           opacity: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: panel.closest('.section'),
-            start: 'top 90%',
-            end: 'top 40%',
-            scrub: 1
-          }
+          duration: 0.6,
+          ease: 'power2.out'
         });
 
-        // Fly out
-        gsap.to(panel, {
-          x: xStart,
-          opacity: 0.5,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: panel.closest('.section'),
-            start: 'bottom 60%',
-            end: 'bottom 10%',
-            scrub: 1
-          }
+        // Trigger in when section enters
+        ScrollTrigger.create({
+          trigger: section,
+          start: 'top 75%',
+          end: 'bottom 25%',
+          onEnter: () => tl.play(),
+          onLeave: () => tl.reverse(),
+          onEnterBack: () => tl.play(),
+          onLeaveBack: () => tl.reverse()
         });
       });
     }
