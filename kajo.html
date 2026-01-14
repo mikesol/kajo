@@ -347,6 +347,63 @@
       margin-left: auto;
     }
 
+    /* Section transition sentinel */
+    .section-sentinel {
+      position: absolute;
+      bottom: -30px;
+      width: 50px;
+      height: 50px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .section-sentinel.sentinel-right {
+      right: 25%;
+      transform: translateX(50%);
+    }
+
+    .section-sentinel.sentinel-left {
+      left: 25%;
+      transform: translateX(-50%);
+    }
+
+    /* Rotating squares */
+    .sentinel-square {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--aurora-teal);
+      opacity: 0.5;
+      animation: sentinelRotate 25s linear infinite;
+    }
+
+    .sentinel-square-inner {
+      position: absolute;
+      inset: 8px;
+      border: 1px solid var(--aurora-cyan);
+      opacity: 0.4;
+      animation: sentinelRotate 18s linear infinite reverse;
+    }
+
+    @keyframes sentinelRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Outer pulse */
+    .section-sentinel::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border: 1px solid var(--aurora-teal);
+      opacity: 0.2;
+      animation: sentinelPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes sentinelPulse {
+      0%, 100% { transform: scale(1); opacity: 0.2; }
+      50% { transform: scale(1.2); opacity: 0.05; }
+    }
+
     /* Panel backgrounds */
     .panel-light {
       background: var(--ice-white);
@@ -671,6 +728,10 @@
           </p>
         </div>
       </div>
+      <div class="section-sentinel sentinel-right">
+        <div class="sentinel-square"></div>
+        <div class="sentinel-square-inner"></div>
+      </div>
     </section>
 
     <!-- SELLERS SECTION - RIGHT PANEL -->
@@ -695,6 +756,10 @@
           </a>
         </div>
       </div>
+      <div class="section-sentinel sentinel-left">
+        <div class="sentinel-square"></div>
+        <div class="sentinel-square-inner"></div>
+      </div>
     </section>
 
     <!-- INVESTORS SECTION - LEFT PANEL -->
@@ -718,6 +783,10 @@
             <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
         </div>
+      </div>
+      <div class="section-sentinel sentinel-right">
+        <div class="sentinel-square"></div>
+        <div class="sentinel-square-inner"></div>
       </div>
     </section>
 
