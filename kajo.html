@@ -120,6 +120,41 @@
       opacity: 1;
     }
 
+    /* Language Toggle */
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: none;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      transition: border-color 0.3s ease;
+    }
+
+    .lang-toggle:hover {
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .lang-option {
+      color: var(--ice-white);
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+    }
+
+    .lang-option.active {
+      opacity: 1;
+    }
+
+    .lang-divider {
+      color: var(--ice-white);
+      opacity: 0.3;
+    }
+
     /* Section Indicator */
     .section-indicator {
       position: fixed;
@@ -664,11 +699,16 @@
   <nav class="nav">
     <a href="#" class="nav-logo">Kajo</a>
     <ul class="nav-links">
-      <li><a href="#about">About</a></li>
-      <li><a href="#sellers">Sellers</a></li>
-      <li><a href="#investors">Investors</a></li>
-      <li><a href="#operators">Operators</a></li>
+      <li><a href="#about" data-i18n="nav.about">Tietoa meistä</a></li>
+      <li><a href="#sellers" data-i18n="nav.sellers">Myyjille</a></li>
+      <li><a href="#investors" data-i18n="nav.investors">Sijoittajille</a></li>
+      <li><a href="#operators" data-i18n="nav.operators">Operoijille</a></li>
     </ul>
+    <button class="lang-toggle" id="lang-toggle">
+      <span class="lang-option active" data-lang="fi">FI</span>
+      <span class="lang-divider">/</span>
+      <span class="lang-option" data-lang="en">EN</span>
+    </button>
   </nav>
 
   <!-- Section Indicator -->
@@ -704,12 +744,12 @@
       <!-- Hero Content -->
       <div class="hero-content">
         <h1 class="hero-title">Kajo</h1>
-        <p class="hero-tagline">A Nordic Investment Firm</p>
+        <p class="hero-tagline" data-i18n="hero.tagline">Pohjoismainen sijoitusyhtiö</p>
       </div>
 
       <!-- Scroll Indicator -->
       <div class="scroll-indicator">
-        <span>Scroll</span>
+        <span data-i18n="hero.scroll">Vieritä</span>
         <div class="scroll-line"></div>
       </div>
     </section>
@@ -718,13 +758,13 @@
     <section class="section" id="about">
       <div class="panel panel-left panel-light">
         <div class="section-container">
-          <span class="section-label">Who We Are</span>
-          <h2 class="section-title">Building legacies<br>in northern light</h2>
-          <p class="section-description">
-            We find exceptional companies and nurture them toward their full potential.
+          <span class="section-label" data-i18n="about.label">Tietoa meistä</span>
+          <h2 class="section-title" data-i18n="about.title" data-i18n-html="true">Rakennamme perintöjä<br>pohjoisessa valossa</h2>
+          <p class="section-description" data-i18n="about.desc1">
+            Löydämme poikkeuksellisia yrityksiä ja kasvatamme ne täyteen potentiaaliinsa.
           </p>
-          <p class="section-description" style="margin-top: 1rem;">
-            We offer competitive and fair prices for sustainable companies at inflection points: retirement, ownership transitions, or founders ready for their next chapter.
+          <p class="section-description" style="margin-top: 1rem;" data-i18n="about.desc2">
+            Tarjoamme kilpailukykyisiä ja reiluja hintoja kestäville yrityksille käännekohdissa: eläköityminen, omistajanvaihdokset tai perustajat valmiina seuraavaan vaiheeseen.
           </p>
         </div>
       </div>
@@ -739,20 +779,20 @@
     <section class="section" id="sellers">
       <div class="panel panel-right panel-dark">
         <div class="section-container">
-          <span class="section-label">For Sellers</span>
-          <h2 class="section-title">Your legacy,<br>protected</h2>
-          <p class="section-description">
-            When it's time to transition, we offer more than capital.
+          <span class="section-label" data-i18n="sellers.label">Myyjille</span>
+          <h2 class="section-title" data-i18n="sellers.title" data-i18n-html="true">Perintösi,<br>suojattuna</h2>
+          <p class="section-description" data-i18n="sellers.desc">
+            Kun on aika siirtyä eteenpäin, tarjoamme enemmän kuin pääomaa.
           </p>
 
           <div class="simple-list">
-            <div class="simple-list-item">Thoughtful transitions that honor your culture</div>
-            <div class="simple-list-item">Earn dividends after sale based on shared milestones</div>
-            <div class="simple-list-item">Experts at progressively digitalizing companies</div>
+            <div class="simple-list-item" data-i18n="sellers.point1">Harkitut siirtymät, jotka kunnioittavat kulttuuriasi</div>
+            <div class="simple-list-item" data-i18n="sellers.point2">Ansaitse osinkoja myynnin jälkeen yhteisten tavoitteiden perusteella</div>
+            <div class="simple-list-item" data-i18n="sellers.point3">Asiantuntijoita yritysten asteittaisessa digitalisoinnissa</div>
           </div>
 
-          <a href="#" class="cta-button">
-            Start a conversation
+          <a href="#" class="cta-button" data-i18n="sellers.cta">
+            Aloita keskustelu
             <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
         </div>
@@ -768,20 +808,20 @@
     <section class="section" id="investors">
       <div class="panel panel-left panel-twilight">
         <div class="section-container">
-          <span class="section-label">For Investors</span>
-          <h2 class="section-title">Patient capital,<br>exceptional returns</h2>
-          <p class="section-description">
-            We partner with those who share our long-term vision.
+          <span class="section-label" data-i18n="investors.label">Sijoittajille</span>
+          <h2 class="section-title" data-i18n="investors.title" data-i18n-html="true">Kärsivällistä pääomaa,<br>poikkeuksellisia tuottoja</h2>
+          <p class="section-description" data-i18n="investors.desc">
+            Teemme yhteistyötä niiden kanssa, jotka jakavat pitkän aikavälin visiomme.
           </p>
 
           <div class="simple-list">
-            <div class="simple-list-item">Institutional investors and family offices</div>
-            <div class="simple-list-item">Fund structure that rewards patience</div>
-            <div class="simple-list-item">Finland-focused, institutional standards</div>
+            <div class="simple-list-item" data-i18n="investors.point1">Institutionaaliset sijoittajat ja family officet</div>
+            <div class="simple-list-item" data-i18n="investors.point2">Rahastorakenne, joka palkitsee kärsivällisyyden</div>
+            <div class="simple-list-item" data-i18n="investors.point3">Suomeen keskittynyt, institutionaaliset standardit</div>
           </div>
 
-          <a href="#" class="cta-button">
-            Investment opportunities
+          <a href="#" class="cta-button" data-i18n="investors.cta">
+            Sijoitusmahdollisuudet
             <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
         </div>
@@ -797,20 +837,20 @@
     <section class="section" id="operators">
       <div class="panel panel-right panel-light">
         <div class="section-container">
-          <span class="section-label">For Operators</span>
-          <h2 class="section-title">Build something<br>remarkable</h2>
-          <p class="section-description">
-            We're looking for exceptional talent to join our portfolio companies and shape the future.
+          <span class="section-label" data-i18n="operators.label">Operoijille</span>
+          <h2 class="section-title" data-i18n="operators.title" data-i18n-html="true">Rakenna jotain<br>merkittävää</h2>
+          <p class="section-description" data-i18n="operators.desc">
+            Etsimme poikkeuksellisia osaajia liittymään portfolioyhtiöihimme ja muokkaamaan tulevaisuutta.
           </p>
 
           <div class="simple-list">
-            <div class="simple-list-item">CEO, CFO, and board positions available</div>
-            <div class="simple-list-item">Real equity, real impact</div>
-            <div class="simple-list-item">Hands-on roles in growing Finnish companies</div>
+            <div class="simple-list-item" data-i18n="operators.point1">CEO-, CFO- ja hallituspaikkoja avoinna</div>
+            <div class="simple-list-item" data-i18n="operators.point2">Todellista omistajuutta, todellista vaikutusta</div>
+            <div class="simple-list-item" data-i18n="operators.point3">Käytännön rooleja kasvavissa suomalaisissa yrityksissä</div>
           </div>
 
-          <a href="#" class="cta-button">
-            View opportunities
+          <a href="#" class="cta-button" data-i18n="operators.cta">
+            Katso avoimet paikat
             <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
         </div>
@@ -821,11 +861,11 @@
     <footer>
       <div class="footer-content">
         <div class="footer-logo">Kajo</div>
-        <p class="footer-text">© 2026 Kajo Partners. Helsinki, Finland.</p>
+        <p class="footer-text">© 2026 Kajo Partners. Helsinki, Suomi.</p>
         <div class="footer-links">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
-          <a href="#">Contact</a>
+          <a href="#" data-i18n="footer.privacy">Tietosuoja</a>
+          <a href="#" data-i18n="footer.terms">Ehdot</a>
+          <a href="#" data-i18n="footer.contact">Yhteystiedot</a>
         </div>
       </div>
     </footer>
@@ -1199,12 +1239,137 @@
       auroraScrollValue = scrollY / maxScroll;
     }
 
+    // ========== INTERNATIONALIZATION ==========
+    const translations = {
+      fi: {
+        'nav.about': 'Tietoa meistä',
+        'nav.sellers': 'Myyjille',
+        'nav.investors': 'Sijoittajille',
+        'nav.operators': 'Operoijille',
+        'hero.tagline': 'Pohjoismainen sijoitusyhtiö',
+        'hero.scroll': 'Vieritä',
+        'about.label': 'Tietoa meistä',
+        'about.title': 'Rakennamme perintöjä<br>pohjoisessa valossa',
+        'about.desc1': 'Löydämme poikkeuksellisia yrityksiä ja kasvatamme ne täyteen potentiaaliinsa.',
+        'about.desc2': 'Tarjoamme kilpailukykyisiä ja reiluja hintoja kestäville yrityksille käännekohdissa: eläköityminen, omistajanvaihdokset tai perustajat valmiina seuraavaan vaiheeseen.',
+        'sellers.label': 'Myyjille',
+        'sellers.title': 'Perintösi,<br>suojattuna',
+        'sellers.desc': 'Kun on aika siirtyä eteenpäin, tarjoamme enemmän kuin pääomaa.',
+        'sellers.point1': 'Harkitut siirtymät, jotka kunnioittavat kulttuuriasi',
+        'sellers.point2': 'Ansaitse osinkoja myynnin jälkeen yhteisten tavoitteiden perusteella',
+        'sellers.point3': 'Asiantuntijoita yritysten asteittaisessa digitalisoinnissa',
+        'sellers.cta': 'Aloita keskustelu',
+        'investors.label': 'Sijoittajille',
+        'investors.title': 'Kärsivällistä pääomaa,<br>poikkeuksellisia tuottoja',
+        'investors.desc': 'Teemme yhteistyötä niiden kanssa, jotka jakavat pitkän aikavälin visiomme.',
+        'investors.point1': 'Institutionaaliset sijoittajat ja family officet',
+        'investors.point2': 'Rahastorakenne, joka palkitsee kärsivällisyyden',
+        'investors.point3': 'Suomeen keskittynyt, institutionaaliset standardit',
+        'investors.cta': 'Sijoitusmahdollisuudet',
+        'operators.label': 'Operoijille',
+        'operators.title': 'Rakenna jotain<br>merkittävää',
+        'operators.desc': 'Etsimme poikkeuksellisia osaajia liittymään portfolioyhtiöihimme ja muokkaamaan tulevaisuutta.',
+        'operators.point1': 'CEO-, CFO- ja hallituspaikkoja avoinna',
+        'operators.point2': 'Todellista omistajuutta, todellista vaikutusta',
+        'operators.point3': 'Käytännön rooleja kasvavissa suomalaisissa yrityksissä',
+        'operators.cta': 'Katso avoimet paikat',
+        'footer.privacy': 'Tietosuoja',
+        'footer.terms': 'Ehdot',
+        'footer.contact': 'Yhteystiedot'
+      },
+      en: {
+        'nav.about': 'About',
+        'nav.sellers': 'Sellers',
+        'nav.investors': 'Investors',
+        'nav.operators': 'Operators',
+        'hero.tagline': 'A Nordic Investment Firm',
+        'hero.scroll': 'Scroll',
+        'about.label': 'Who We Are',
+        'about.title': 'Building legacies<br>in northern light',
+        'about.desc1': 'We find exceptional companies and nurture them toward their full potential.',
+        'about.desc2': 'We offer competitive and fair prices for sustainable companies at inflection points: retirement, ownership transitions, or founders ready for their next chapter.',
+        'sellers.label': 'For Sellers',
+        'sellers.title': 'Your legacy,<br>protected',
+        'sellers.desc': "When it's time to transition, we offer more than capital.",
+        'sellers.point1': 'Thoughtful transitions that honor your culture',
+        'sellers.point2': 'Earn dividends after sale based on shared milestones',
+        'sellers.point3': 'Experts at progressively digitalizing companies',
+        'sellers.cta': 'Start a conversation',
+        'investors.label': 'For Investors',
+        'investors.title': 'Patient capital,<br>exceptional returns',
+        'investors.desc': 'We partner with those who share our long-term vision.',
+        'investors.point1': 'Institutional investors and family offices',
+        'investors.point2': 'Fund structure that rewards patience',
+        'investors.point3': 'Finland-focused, institutional standards',
+        'investors.cta': 'Investment opportunities',
+        'operators.label': 'For Operators',
+        'operators.title': 'Build something<br>remarkable',
+        'operators.desc': "We're looking for exceptional talent to join our portfolio companies and shape the future.",
+        'operators.point1': 'CEO, CFO, and board positions available',
+        'operators.point2': 'Real equity, real impact',
+        'operators.point3': 'Hands-on roles in growing Finnish companies',
+        'operators.cta': 'View opportunities',
+        'footer.privacy': 'Privacy',
+        'footer.terms': 'Terms',
+        'footer.contact': 'Contact'
+      }
+    };
+
+    let currentLang = 'fi';
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const t = translations[lang];
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) {
+          if (el.hasAttribute('data-i18n-html')) {
+            el.innerHTML = t[key];
+          } else {
+            // Preserve child elements (like SVGs in buttons)
+            const svg = el.querySelector('svg');
+            if (svg) {
+              el.innerHTML = t[key] + ' ';
+              el.appendChild(svg);
+            } else {
+              el.textContent = t[key];
+            }
+          }
+        }
+      });
+
+      // Update toggle UI
+      document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.classList.toggle('active', opt.dataset.lang === lang);
+      });
+
+      // Store preference
+      localStorage.setItem('kajo-lang', lang);
+    }
+
+    function setupLanguageToggle() {
+      const toggle = document.getElementById('lang-toggle');
+      if (!toggle) return;
+
+      toggle.addEventListener('click', () => {
+        setLanguage(currentLang === 'fi' ? 'en' : 'fi');
+      });
+
+      // Check for stored preference
+      const stored = localStorage.getItem('kajo-lang');
+      if (stored && stored !== currentLang) {
+        setLanguage(stored);
+      }
+    }
+
     // ========== INITIALIZE ==========
     document.addEventListener('DOMContentLoaded', () => {
       initAurora();
       setupGSAPEffects();
       setupScrollAnimations();
       setupIndicatorClicks();
+      setupLanguageToggle();
 
       // Update aurora on scroll
       window.addEventListener('scroll', updateAuroraScroll, { passive: true });
