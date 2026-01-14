@@ -915,7 +915,6 @@
 
       const fragmentShader = `
         uniform float uTime;
-        uniform float uScroll;
         uniform vec2 uResolution;
         varying vec2 vUv;
 
@@ -987,9 +986,7 @@
           float aspectRatio = uResolution.x / uResolution.y;
           vec2 scaledUv = vec2(uv.x * aspectRatio, uv.y);
 
-          // Scroll affects time speed and aurora intensity
-          float scrollInfluence = uScroll * 0.5;
-          float time = uTime * 0.15 + scrollInfluence * 2.0;
+          float time = uTime * 0.15;
 
           // Deep night sky gradient
           vec3 skyTop = vec3(0.01, 0.02, 0.05);
@@ -1032,14 +1029,13 @@
           vec3 aurora4Color = mix(auroraGreen1, auroraPurple, colorMix2 * 0.3);
           vec3 aurora5Color = mix(auroraTeal, auroraBlue, colorMix * 0.4);
 
-          // Combine aurora layers - scroll subtly boosts intensity
-          float intensityBoost = 1.0 + scrollInfluence * 0.3;
+          // Combine aurora layers
           vec3 aurora = vec3(0.0);
-          aurora += aurora1Color * ribbon1 * 0.7 * intensityBoost;
-          aurora += aurora2Color * ribbon2 * 0.6 * intensityBoost;
-          aurora += aurora3Color * ribbon3 * 0.5 * intensityBoost;
-          aurora += aurora4Color * ribbon4 * 0.8 * intensityBoost;
-          aurora += aurora5Color * ribbon5 * 0.4 * intensityBoost;
+          aurora += aurora1Color * ribbon1 * 0.7;
+          aurora += aurora2Color * ribbon2 * 0.6;
+          aurora += aurora3Color * ribbon3 * 0.5;
+          aurora += aurora4Color * ribbon4 * 0.8;
+          aurora += aurora5Color * ribbon5 * 0.4;
 
           // Add glow effect
           float glow = (ribbon1 + ribbon2 + ribbon3 + ribbon4 + ribbon5) * 0.15;
@@ -1078,7 +1074,6 @@
         fragmentShader: fragmentShader,
         uniforms: {
           uTime: { value: 0 },
-          uScroll: { value: 0 },
           uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
         }
       });
@@ -1086,19 +1081,8 @@
       const mesh = new THREE.Mesh(geometry, material);
       scene.add(mesh);
 
-      // Scroll tracking
-      let targetScroll = 0;
-      let currentScroll = 0;
-
-      window.addEventListener('scroll', () => {
-        const maxScroll = document.body.scrollHeight - window.innerHeight;
-        targetScroll = maxScroll > 0 ? window.scrollY / maxScroll : 0;
-      }, { passive: true });
-
-      // Animation loop with scroll
+      // Animation loop
       function animate() {
-        currentScroll += (targetScroll - currentScroll) * 0.1;
-        material.uniforms.uScroll.value = currentScroll;
         material.uniforms.uTime.value += 0.016;
         renderer.render(scene, camera);
         requestAnimationFrame(animate);
